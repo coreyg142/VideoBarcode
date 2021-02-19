@@ -9,7 +9,9 @@ class BarcodeMaker:
 
     def makeBarcode(self, source, nFrames, blur, width, height=default_height):
 
-        video, interval, totalFrames, height = self.getVideoFile(source, nFrames, height)
+        video = self.getVideoFile(source)
+        interval, totalFrames = self.getInterval(video, nFrames)
+        height = self.getHeight(video, height)
 
         completedFrames = 0
         nextFrame = interval / 2
@@ -48,24 +50,34 @@ class BarcodeMaker:
 
         return output
 
-    def getVideoFile(self, source, nFrames, height=default_height):
-        video = cv2.VideoCapture(source)
-        if not video.isOpened():
-            raise FileNotFoundError("Video not found")
-
+    def getInterval(self, video, nFrames):
         totalFrames = video.get(cv2.CAP_PROP_FRAME_COUNT)
-        if not isinstance(nFrames, int) or nFrames < 1:
-            raise ValueError("Number of frames must be a positive integer")
+
+        if nFrames < 1 or not isinstance(nFrames, int):
+            raise ValueError("nFrames must be an integer greater than zero")
         elif nFrames > totalFrames:
-            raise ValueError("Number of frames is larger than total available (" + str(totalFrames) + ")")
+            raise ValueError("nFrames is larger than the total available (" + totalFrames + ")")
+
         interval = totalFrames / nFrames
-        success, image = video.read()
-        if not success:
+
+        return interval, totalFrames
+
+    def getHeight(self, video, height):
+        valid, image = video.read()
+
+        if not valid:
             raise IOError("Cannot read from video file")
         if height is None:
             height = image.shape[0]
 
-        return video, interval, totalFrames, height
+        return height
+
+    def getVideoFile(self, source):
+        video = cv2.VideoCapture(source)
+        if not video.isOpened():
+            raise FileNotFoundError("Video not found")
+
+        return video
 
     def addBlur(self, image, amount):
         kernel_h = numpy.zeros((amount, amount))
