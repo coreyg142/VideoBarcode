@@ -26,13 +26,14 @@ import numpy
 
 class BarcodeMaker:
 
-    def makeBarcode(self, source, nFrames, blur, width):
+    def makeBarcode(self, source, nFrames, blur, width, height):
         """
         Main function to generate the barcode image
         :param source: str, The source video file
         :param nFrames: int, The number of frames that should be rendered in the output image
         :param blur: int, Amount of motion blur
         :param width: int, Width of each slice
+        :param height:
         :return: The output image
         """
 
@@ -41,7 +42,8 @@ class BarcodeMaker:
         # Calculate the interval and total # of frames in the video
         interval, totalFrames = self.getInterval(video, nFrames)
         # Get the height of the video
-        height = self.getHeight(video)
+        if height is None:
+            height = self.getHeight(video)
 
         completedFrames = 0
         nextFrame = interval / 2
@@ -150,7 +152,7 @@ class BarcodeMaker:
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
 
     parser.add_argument("source", help="Video filename", type=str)
     parser.add_argument("dest", help="Filename for the final image", type=str)
@@ -158,11 +160,13 @@ def main():
     parser.add_argument("-b", "--blur", help="Amount to blur if desired. Default 100", type=int, nargs='?', default=0,
                         const=100)
     parser.add_argument("-w", "--width", help="Specify the width of each slice, Default 1px", type=int, default=1)
+    parser.add_argument("-h", "--height", help="Specify the height of each slice, Default calculates the height of "
+                                               "the input frames", type=int, default=None)
 
     args = parser.parse_args()
 
     bm = BarcodeMaker()
-    output = bm.makeBarcode(args.source, args.nFrames, args.blur, args.width)
+    output = bm.makeBarcode(args.source, args.nFrames, args.blur, args.width, args.height)
 
     cv2.imwrite(args.dest, output)
     print("Visualization saved to {}".format(args.dest))
