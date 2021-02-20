@@ -33,7 +33,7 @@ class BarcodeMaker:
         :param nFrames: int, The number of frames that should be rendered in the output image
         :param blur: int, Amount of motion blur
         :param width: int, Width of each slice
-        :param height:
+        :param height: int, Height of each slice
         :return: The output image
         """
 
@@ -41,7 +41,7 @@ class BarcodeMaker:
         video = self.getVideoFile(source)
         # Calculate the interval and total # of frames in the video
         interval, totalFrames = self.getInterval(video, nFrames)
-        # Get the height of the video
+        # Get the height of the video if not specified by user
         if height is None:
             height = self.getHeight(video)
 
